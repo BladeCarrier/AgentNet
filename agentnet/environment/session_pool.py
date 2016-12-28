@@ -78,7 +78,7 @@ class SessionPoolEnvironment(BaseEnvironment, BaseObjective):
             # Helper function for initializing storages for observations, actions and agent memories.
             if type(vars) is int:
                 return [create_shared(name_prefix+str(i),
-                                      first_shape,
+                                      np.zeros(first_shape),
                                       dtype=default_dtype)
                         for i in range(vars)]
             else:
@@ -87,7 +87,7 @@ class SessionPoolEnvironment(BaseEnvironment, BaseObjective):
 
                 vars = check_list(vars)
                 return [create_shared(name_prefix+str(i),
-                                      second_shape+tuple(var.output_shape[1:]),
+                                      np.zeros(second_shape+tuple(var.output_shape[1:])),
                                       dtype=get_layer_dtype(var))
                         for i, var in enumerate(vars)]
 

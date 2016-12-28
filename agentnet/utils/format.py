@@ -36,15 +36,13 @@ def check_sequence(variables):
     if any(isinstance(variables, seq) for seq in supported_sequences):
         return variables
     else:
-        # if it is a numpy or theano array, excluding numpy array of objects, return a list with single element
-        # yes, i know it's messy. Better options are welcome for pull requests :)
-        if is_theano_object(variables) or is_numpy_object(variables):
-            if variables.dtype != np.object:
-                return [variables]
-
-        # elif it is a different kind of sequence
-        if hasattr(variables, '__iter__'):
-            # try casting to tuple. If cannot, treat that it will be treated as an atomic object
+        # If it is a numpy or theano array, excluding numpy array of objects, return a list with single element
+        # Yes, i know it's messy. Better options are welcome for pull requests :)
+        if (is_theano_object(variables) or is_numpy_object(variables)) and variables.dtype != np.object:
+            return [variables]
+        elif hasattr(variables, '__iter__'):
+            # Elif it is a different kind of sequence try casting to tuple. If cannot, treat that it will be treated
+            # as an atomic object.
             try:
                 tupled_variables = tuple(variables)
                 message = """{variables} of type {var_type} will be treated as a sequence of {len_casted} elements,
@@ -57,7 +55,7 @@ def check_sequence(variables):
                 message = """
                 {variables} of type {var_type} will be treated as a single input/output tensor,
                 and not a collection of such.
-                If you want otherwise, If you want otherwise, please cast it to list/tuple.
+                If you want otherwise, please cast it to list/tuple.
                 """
                 warn(message.format(variables=variables, var_type=type(variables)))
                 return [variables]

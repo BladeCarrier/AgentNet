@@ -4,7 +4,6 @@ from theano import tensor as T
 
 from ..environment import BaseEnvironment
 from ..objective import BaseObjective
-from ..utils import insert_dim
 from ..utils.format import check_list
 
 
@@ -40,10 +39,7 @@ class SessionBatchEnvironment(BaseEnvironment, BaseObjective):
     :type actions: theano tensor or a list of such
 
 
-
-
-
-    how does it tick:
+    How does it tick:
 
     During experience replay sessions,
      - observations, actions and rewards match original ones
@@ -56,10 +52,10 @@ class SessionBatchEnvironment(BaseEnvironment, BaseObjective):
     with no additional computation.
 
     """
+
     def __init__(self, observations, single_observation_shapes,
                  actions=None, single_action_shapes="all_scalar",
                  rewards=None, is_alive=None, preceding_agent_memory=None):
-
 
         # setting environmental variables. Their shape is [batch,time,something]
         self.observations = check_list(observations)
@@ -87,30 +83,28 @@ class SessionBatchEnvironment(BaseEnvironment, BaseObjective):
 
         self.batch_size = self.observations[0].shape[0]
         self.sequence_length = self.observations[0].shape[1]
-        
-        
-        
+
         BaseEnvironment.__init__(self,
-                                 state_shapes = [tuple()],
-                                 observation_shapes = self.single_observation_shapes,
-                                 action_shapes = self.single_action_shapes,
-                                 state_dtypes= ["int32"],
-                                 observation_dtypes = [obs.dtype for obs in self.observations],
-                                 action_dtypes = [act.dtype for act in self.actions]
-                                )
+                                 state_shapes=tuple(()),
+                                 observation_shapes=self.single_observation_shapes,
+                                 action_shapes=self.single_action_shapes,
+                                 state_dtypes=("int32",),
+                                 observation_dtypes=tuple(obs.dtype for obs in self.observations),
+                                 action_dtypes=tuple(act.dtype for act in self.actions)
+                                 )
 
+    def get_action_results(self, last_states, actions, **kwargs):
+        """Computes environment state after processing agent's action.
 
+        :param last_states: Environment state on previous tick.
+        :type last_states: float[batch_id, memory_id0[, memory_id1,...]]
 
+        :param actions: Agent action after observing last state.
+        :type actions: int[batch_id]
 
-    def get_action_results(self, last_states, actions,**kwargs):
-        """
-        computes environment state after processing agent's action
-        arguments:
-            last_state float[batch_id, memory_id0,[memory_id1],...]: environment state on previous tick
-            action int[batch_id]: agent action after observing last state
-        returns:
-            new_state float[batch_id, memory_id0,[memory_id1],...]: environment state after processing agent's action
-            observation float[batch_id,n_agent_inputs]: what agent observes after commiting the last action
+        :returns:
+            new_state float[batch_id, memory_id0[, memory_id1,...]]: Environment state after processing agent's action.
+            observation float[batch_id, n_agent_inputs]: What agent observes after commiting the last action.
         """
         warn("Warning - a session pool has all the observations already stored as .observations property."
              "Recomputing them this way is probably just a slower way of calling your_session_pool.observations")
@@ -124,13 +118,17 @@ class SessionBatchEnvironment(BaseEnvironment, BaseObjective):
 
     def get_reward(self, session_states, session_actions, batch_id):
         """
-        WARNING! this runs on a single session, not on a batch
-        reward given for taking the action in current environment state
-        arguments:
-            session_states float[batch_id, memory_id]: environment state before taking action
-            session_actions int[batch_id]: agent action at this tick
-        returns:
-            reward float[batch_id]: reward for taking action from the given state
+        WARNING! this runs on a single session, not on a batch.
+        Reward given for taking the action in current environment state.
+
+        :param session_states: Environment state before taking action.
+        :type session_states: float[batch_id, memory_id]
+
+        :param session_actions: Agent action at this tick.
+        :type session_actions: int[batch_id]
+
+        :returns:
+            reward float[batch_id]: Reward for taking action from the given state.
         """
         warn("Warning - a session pool has all the rewards already stored as .rewards property."
              "Recomputing them this way is probably just a slower way of calling your_session_pool.rewards")

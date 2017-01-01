@@ -236,14 +236,17 @@ class SessionPoolEnvironment(BaseEnvironment, BaseObjective):
             preceding_memory_states = None
             # is_alives
             if is_alive is not None:
-                is_a = self.is_alive.get_value()
-                is_alive_tensor = np.concatenate((is_a, is_alive), axis=0)
+                is_alive_tensor = np.concatenate((self.is_alive.get_value(), is_alive), axis=0)
+            else:
+                is_alive_tensor = None
 
             # prev memories
             if prev_memories is not None:
-                preceding_memory_states = [np.concatenate((prev_mem.get_value(), new_prev_mem), axis=0)
+                prev_memory_tensors = [np.concatenate((prev_mem.get_value(), new_prev_mem), axis=0)
                                            for prev_mem, new_prev_mem in
                                            zip(self.preceding_agent_memories, prev_memories)]
+            else:
+                prev_memory_tensors = None
 
             # crop to pool size
             if max_pool_size is not None:
@@ -252,20 +255,22 @@ class SessionPoolEnvironment(BaseEnvironment, BaseObjective):
                     observation_tensors = [obs[-max_pool_size:] for obs in observation_tensors]
                     action_tensors = [act[-max_pool_size:] for act in action_tensors]
                     reward_tensor = reward_tensor[-max_pool_size:]
-                    if is_alive is not None:
+                    if is_alive_tensor is not None:
                         is_alive_tensor = is_alive_tensor[-max_pool_size:]
-                    if prev_memories is not None:
-                        preceding_memory_states = [mem[-max_pool_size:] for mem in preceding_memory_states]
+                    if prev_memory_tensors is not None:
+                        prev_memory_tensors = [mem[-max_pool_size:] for mem in prev_memory_tensors]
         except ValueError:
             warn("Warning! Appending sessions to empty or broken pool. Old pool sessions, if any, are disposed.")
             observation_tensors = observation_sequences
             action_tensors = action_sequences
             reward_tensor = reward_seq
             is_alive_tensor = is_alive
-            preceding_memory_states = prev_memories
+            prev_memory_tensors = prev_memories
 
-        # Load everything into the environmnet.
-        self.load_sessions(observation_tensors, action_tensors, reward_tensor, is_alive_tensor, preceding_memory_states)
+        #load everything into the environmnet
+        self.load_sessions(observation_tensors,action_tensors,reward_tensor,is_alive_tensor,prev_memory_tensors)
+
+
 
     def get_session_updates(self, observation_sequences, action_sequences, reward_seq, is_alive=None, prev_memory=None,
                             cast_dtypes=True):

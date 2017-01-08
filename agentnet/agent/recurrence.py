@@ -523,13 +523,15 @@ class Recurrence(DictLayer):
             # call one step recurrence
             new_states, new_outputs = self.get_one_step(prev_states_dict, inputs_dict, **recurrence_flags)
 
+
             #make sure output variable is of exactly the same type as corresponding input
-            #TODO submit lasagne issue to make dense layers with 1 unit non-broadcastable
             new_states = [prev_state.type.convert_variable(state)
                             for (prev_state,state) in zip(prev_states,new_states)]
+            assert None not in new_states, "Some state variables has different dtype/shape from init ."
+
             new_outputs = [prev_out.type.convert_variable(out)
                             for (prev_out,out) in zip(prev_outputs,new_outputs)]
-
+            assert None not in new_outputs, "Some of the tracked outputs has shape/dtype changing over time. Please report this."
 
             return new_states + new_outputs
 

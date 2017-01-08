@@ -3,13 +3,13 @@ A thin wrapper for openAI gym environments that maintains a set of parallel game
 interaction sessions given agent one-step applier function.
 """
 
-import gym
 import numpy as np
 from ...utils.layers import get_layer_dtype
 from ...environment import SessionPoolEnvironment
 from warnings import warn
+import gym
+from gym.wrappers import Monitor
 
-function = type(lambda: 0)
 
 
 def GamePool(*args, **kwargs):
@@ -47,7 +47,7 @@ class EnvPool(object):
         :param agent_step: Function with the same signature as agent.get_react_function().
         :type agent_step: theano.function
         """
-        if not isinstance(make_env, function):
+        if not callable(make_env):
             env_name = make_env
             make_env = lambda: gym.make(env_name)
 
@@ -212,10 +212,10 @@ class EnvPool(object):
         if not use_monitor and record_video:
             raise warn("Cannot video without gym monitor. If you still want video, set use_monitor to True")
 
-        if record_video:
-            env.monitor.start(save_path, force=True)
+        if record_video :
+            env = Monitor(env,save_path,force=True)
         elif use_monitor:
-            env.monitor.start(save_path, lambda i: False, force=True)
+            env = Monitor(env, save_path, video_callable=lambda i: False, force=True)
 
         game_rewards = []
         for _ in range(n_games):
@@ -245,6 +245,6 @@ class EnvPool(object):
                 t += 1
             game_rewards.append(total_reward)
 
-        env.monitor.close()
+        env.close()
         del env
         return game_rewards

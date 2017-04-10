@@ -266,8 +266,8 @@ class Recurrence(DictLayer):
         if verify_graph:
             # verifying graph topology (assertions)
 
-            # all recurrent graph inputs and prev_states are unique (no input/prev_state is used more than once)
-            assert len(self.all_inputs) == len(set(self.all_inputs))
+            #all prev_states are unique (no prev_state is set with more than one value)
+            assert len(list(self.state_variables.values())) == len(set(self.state_variables.values()))
 
             # all state_init correspond to defined state variables
             for state_out in list(self.state_init.keys()):

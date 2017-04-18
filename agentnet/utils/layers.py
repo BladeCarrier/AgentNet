@@ -42,7 +42,7 @@ def clip_grads(layer, clipping_bound):
 
 # dtype checker
 def get_layer_dtype(layer, default=None):
-    """ takes layer's output_dtype property if it is defined, 
+    """ takes layer's output_dtype property if it is defined,
     otherwise defaults to default or (if it's not given) theano.config.floatX"""
     return layer.output_dtype if hasattr(layer, "output_dtype") else default or theano.config.floatX
 
@@ -78,17 +78,17 @@ class DictLayer(MergeLayer):
 
         # infer keys
         if isinstance(output_shapes, dict):
-            keys = output_shapes.keys()
+            keys = list(output_shapes.keys())
             if not isinstance(output_shapes, OrderedDict):
                 warn("DictLayer output_shapes should be collections.OrderedDict, instead given a regular dict. "
                      "Assuming keys order to be {}. If you want a different order, consider sending an OrderedDict"
                      " instead.".format(keys),verbosity_level=2)
 
         elif isinstance(output_dtypes, dict):
-            keys = output_dtypes.keys()
+            keys = list(output_dtypes.keys())
             warn("Warning: DictLayer running with keys inferred from dtypes:" + str(keys))
         else:
-            keys = range(len(check_list(output_shapes)))
+            keys = list(range(len(check_list(output_shapes))))
             warn("Warning: DictLayer running with default keys:" + str(keys))
 
         # convert * to OrderedDict with same order of keys

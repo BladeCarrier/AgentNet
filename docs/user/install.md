@@ -1,6 +1,6 @@
 # Installing AgentNet
 
-A native way to instal AgentNet is by using pip
+A native way to install AgentNet is by using pip
 We also provide a platform-agnostic Docker container with AgentNet and most popular analytical libraries.
 
 Any assistance with AgentNet installation, as well as your feedback, ideas and bug reports are very welcome.
